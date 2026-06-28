@@ -49,7 +49,7 @@ public class RefreshTokenService {
                         new InvalidRefreshTokenException("Refresh token not found"));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public RefreshToken verifyToken(String token) {
         RefreshToken refreshToken = findByToken(token);
 
