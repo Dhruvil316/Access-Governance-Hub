@@ -1,0 +1,119 @@
+############################
+# Java / Maven
+############################
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+############################
+# IntelliJ IDEA
+############################
+.idea/
+*.iml
+out/
+
+############################
+# Eclipse
+############################
+.project
+.classpath
+.settings/
+.factorypath
+
+############################
+# VS Code
+############################
+.vscode/
+
+############################
+# NetBeans
+############################
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+############################
+# OS Files
+############################
+.DS_Store
+Thumbs.db
+
+############################
+# Logs
+############################
+*.log
+logs/
+
+############################
+# Spring Boot
+############################
+*.pid
+*.seed
+*.pid.lock
+
+############################
+# Environment Files
+############################
+.env
+.env.*
+!.env.example
+
+############################
+# Application Secrets
+############################
+application-local.yml
+application-local.yaml
+application-dev.yml
+application-dev.yaml
+application-prod.yml
+application-prod.yaml
+
+############################
+# Maven Wrapper (keep)
+############################
+!.mvn/
+!.mvn/wrapper/
+!mvnw
+!mvnw.cmd
+
+############################
+# Generated files
+############################
+*.class
+
+############################
+# Mac
+############################
+.AppleDouble
+.LSOverride
+
+############################
+# Linux
+############################
+*~
+
+############################
+# Temporary files
+############################
+*.tmp
+*.temp
+*.swp
+*.swo
+
+############################
+# Test reports
+############################
+surefire-reports/
+failsafe-reports/
+
+############################
+# JaCoCo
+############################
+jacoco.exec
+/site/
+
+############################
+# Docker
+############################
+docker-data/

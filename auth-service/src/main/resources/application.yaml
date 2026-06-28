@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: auth-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+
+  jackson:
+    time-zone: UTC
+
+server:
+  port: 8081
+
+jwt:
+  secret: "UppRGlHN6K$o@SGlfdDFAJ893u42SDAF"
+  access-token-expiration: 900000       # 15 minutes (milliseconds)
+  refresh-token-expiration: 604800000   # 7 days (milliseconds)
