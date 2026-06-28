@@ -69,11 +69,6 @@ public class JwtService {
     }
 
 
-    public boolean isTokenValid(String token, User user) {
-        return extractUsername(token).equals(user.getEmail())
-                && !isTokenExpired(token);
-    }
-
 
     public String extractUsername(String token) {
 
@@ -110,8 +105,9 @@ public class JwtService {
     }
 
 
-    private Claims extractAllClaims(String token) {
 
+    // if throws error then token is inValid
+    public Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
