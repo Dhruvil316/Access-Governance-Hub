@@ -1,9 +1,5 @@
 package com.dhruvil.auth_service.services;
-
-import com.dhruvil.auth_service.dto.AuthorityInfo;
-import com.dhruvil.auth_service.dto.JwtResponse;
-import com.dhruvil.auth_service.dto.LoginRequest;
-import com.dhruvil.auth_service.dto.SignupRequest;
+import com.dhruvil.auth_service.dto.*;
 import com.dhruvil.auth_service.entity.RefreshToken;
 import com.dhruvil.auth_service.entity.Role;
 import com.dhruvil.auth_service.entity.User;
@@ -23,11 +19,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Collection;
-import org.springframework.security.core.GrantedAuthority;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,13 +37,12 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final AuthorityService authorityService;
 
-
-    public JwtResponse signup(SignupRequest request) {
+    public MessageResponse signup(SignupRequest request) {
 
         // 1. Check if user already exists
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new UserAlreadyExistsException(
-                    "User already exists with email : " + request.getEmail()
+                    "User already exists with email: " + request.getEmail()
             );
         }
 
@@ -64,39 +57,47 @@ public class AuthService {
 
         user = userRepository.save(user);
 
-        // 3. Assign Default Role
-        Role userRole = roleRepository.findByName("USER")
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Default role USER not found"));
+        // 3. Prepare Roles
+        Set<String> requestedRoles = Optional.ofNullable(request.getRoles())
+                .orElse(List.of("USER"))
+                .stream()
+                .map(String::trim)
+                .map(String::toUpperCase)
+                .filter(role -> !role.isBlank())
+                .collect(Collectors.toSet());
 
-        UserRole mapping = UserRole.builder()
-                .user(user)
-                .role(userRole)
-                .build();
+        if (requestedRoles.isEmpty()) {
+            requestedRoles = Set.of("USER");
+        }
 
-        userRoleRepository.save(mapping);
+        // 4. Create UserRole mappings
+        List<UserRole> mappings = new ArrayList<>();
 
-        // 4. Load Roles & Permissions
-        AuthorityInfo authorityInfo =
-                authorityService.getAuthorities(user);
+        for (String roleName : requestedRoles) {
 
-        // 5. Generate Access Token
-        String accessToken = jwtService.generateAccessToken(
-                user,
-                authorityInfo.getRoles(),
-                authorityInfo.getPermissions()
-        );
+            Role role = roleRepository.findByName(roleName)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Role not found: " + roleName
+                            ));
 
-        // 6. Generate & Save Refresh Token
-        RefreshToken refreshToken =
-                refreshTokenService.createRefreshToken(user);
+            mappings.add(
+                    UserRole.builder()
+                            .user(user)
+                            .role(role)
+                            .build()
+            );
+        }
 
-        // 7. Return Response
-        return JwtResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken.getTokenHash()) // currently storing raw token
+        // 5. Save Role Mappings
+        userRoleRepository.saveAll(mappings);
+
+        // 6. Return Success Response
+        return MessageResponse.builder()
+                .message("User registered successfully.")
                 .build();
     }
+
 
     public JwtResponse login (LoginRequest request) {
 
@@ -108,6 +109,7 @@ public class AuthService {
         );
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal() ;
+
         Collection<? extends GrantedAuthority> authorities =
                 userPrincipal.getAuthorities();
 
@@ -121,6 +123,21 @@ public class AuthService {
                 .map(GrantedAuthority::getAuthority).filter(Objects::nonNull)
                 .filter(authority -> !authority.startsWith("ROLE_"))
                 .toList();
+
+
+        /*
+         * AuthenticationManager authenticates the user by calling
+         * CustomUserDetailsService, which loads the user from the database.
+         *
+         * We load the User entity again because JwtService and
+         * RefreshTokenService currently work with the JPA User entity.
+         *
+         * This extra query only happens during login and keeps the
+         * security layer (UserPrincipal) separate from the persistence layer.
+         *
+         * If needed later, this can be optimized using
+         * userRepository.getReferenceById(userPrincipal.getId()).
+         */
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() ->

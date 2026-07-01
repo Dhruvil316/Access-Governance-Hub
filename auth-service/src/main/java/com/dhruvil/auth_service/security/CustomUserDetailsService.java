@@ -18,6 +18,23 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+/*
+    If the user does not exist then throw error
+    This simply take out the user and convert it into the UserDetails so that spring
+    can easily interpret the user and compare the password
+
+    Later when request comes with JWT
+    Authorization: Bearer xxxxx
+
+    JWT filter does
+    Extract email
+        ↓
+    CustomUserDetailsService.loadUserByUsername(email)
+        ↓
+    Validate JWT
+        ↓
+    SecurityContextHolder
+*/
 
 @Service
 @RequiredArgsConstructor
