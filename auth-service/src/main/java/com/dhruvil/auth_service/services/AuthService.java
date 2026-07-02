@@ -98,7 +98,6 @@ public class AuthService {
                 .build();
     }
 
-
     public JwtResponse login (LoginRequest request) {
 
         Authentication authentication = authenticationManager.authenticate(
@@ -159,5 +158,45 @@ public class AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken.getTokenHash())
                 .build();
+    }
+
+    public JwtResponse refresh(String refreshToken) {
+
+        // 1. Verify Refresh Token -> DB call
+        RefreshToken storedToken =
+                refreshTokenService.verifyToken(refreshToken);
+
+        User user = storedToken.getUser();
+
+        // 2. Load Authorities
+        AuthorityInfo authorityInfo =
+                authorityService.getAuthorities(user);
+
+        // 3. Generate New Access Token
+        String accessToken =
+                jwtService.generateAccessToken(
+                        user,
+                        authorityInfo.getRoles(),
+                        authorityInfo.getPermissions()
+                );
+
+        // 4. Rotate Refresh Token
+        refreshTokenService.revokeToken(storedToken);
+
+        RefreshToken newRefreshToken =
+                refreshTokenService.createRefreshToken(user);
+
+        return JwtResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(newRefreshToken.getTokenHash())
+                .build();
+    }
+
+    public void logout(String refreshToken) {
+
+        RefreshToken storedToken =
+                refreshTokenService.verifyToken(refreshToken);
+
+        refreshTokenService.revokeToken(storedToken);
     }
 }

@@ -41,7 +41,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/signup",
                                 "/auth/login",
-                                "/auth/refresh"
+                                "/auth/refresh",
+                                "/auth/logout" // just for testing
+
                         ).permitAll()
 
                         .anyRequest().authenticated()

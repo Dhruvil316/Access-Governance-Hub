@@ -51,6 +51,7 @@ public class RefreshTokenService {
 
     @Transactional
     public RefreshToken verifyToken(String token) {
+        // DB call
         RefreshToken refreshToken = findByToken(token);
 
         if (Boolean.TRUE.equals(refreshToken.getRevoked())) {
@@ -58,15 +59,14 @@ public class RefreshTokenService {
         }
 
         if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            refreshTokenRepository.delete(refreshToken);
+//            refreshTokenRepository.delete(refreshToken); // if error occurs while delete -> token not delete as request is made
             throw new InvalidRefreshTokenException("Refresh token has expired");
         }
 
         return refreshToken;
     }
 
-    public void revokeToken (String token) {
-        RefreshToken refreshToken = findByToken(token);
+    public void revokeToken (RefreshToken refreshToken) {
         refreshToken.setRevoked(true);
         refreshTokenRepository.save(refreshToken);
     }
