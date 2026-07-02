@@ -19,11 +19,9 @@ import java.util.function.Function;
 public class JwtService {
 
     private final JwtProperties jwtProperties;
-    private final SecretKey signingKey ;
 
-    public JwtService(JwtProperties jwtProperties) {
-        this.jwtProperties = jwtProperties;
-        this.signingKey = Keys.hmacShaKeyFor(
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(
                 Decoders.BASE64.decode(jwtProperties.getSecret())
         );
     }
@@ -126,7 +124,5 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    private SecretKey getSigningKey() {
-        return signingKey;
-    }
+
 }

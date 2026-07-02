@@ -55,7 +55,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                                 "User not found with email : " + email));
 
         // 2. Load User Roles
-        List<UserRole> userRoles = userRoleRepository.findByUser(user);
+        List<UserRole> userRoles = userRoleRepository.findAllRolesByUser(user);
 
         // 3. Collect Role IDs
         List<Long> roleIds = userRoles.stream()

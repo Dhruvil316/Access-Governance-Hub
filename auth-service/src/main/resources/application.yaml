@@ -4,14 +4,18 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/auth_db
-    username: postgres
-    password: postgres
+    username: dhruvilrana
+    password:
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-    open-in-view: false
+#    open-in-view: false
+    ddl-auto : update
+    properties:
+      hibernate:
+        format_sql: true
 
   jackson:
     time-zone: UTC
@@ -20,6 +24,6 @@ server:
   port: 8081
 
 jwt:
-  secret: "UppRGlHN6K$o@SGlfdDFAJ893u42SDAF"
+  secret: "pHnv7b6IZH3mFtiHBhdLo3GYB9LgNDByMAs5lruRlPw=" # BAES64 -> why $ does not come ?
   access-token-expiration: 900000       # 15 minutes (milliseconds)
   refresh-token-expiration: 604800000   # 7 days (milliseconds)
