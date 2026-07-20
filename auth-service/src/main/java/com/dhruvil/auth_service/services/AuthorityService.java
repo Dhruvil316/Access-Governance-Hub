@@ -16,8 +16,9 @@ import java.util.*;
 public class AuthorityService {
 
     private final UserRoleRepository userRoleRepository;
-    private final RolePermissionRepository rolePermissionRepository;
+    private final PermissionCacheService permissionCacheService ;
 
+    // 2 queries on cache hit
     public AuthorityInfo getAuthorities(User user) {
 
         // find all user roles
@@ -31,13 +32,7 @@ public class AuthorityService {
                 .map(userRole -> userRole.getRole().getId())
                 .toList();
 
-        List<String> permissions = rolePermissionRepository
-                .findAllByRoleIds(roleIds)
-                .stream()
-                .map(rolePermission -> rolePermission.getPermission().getName())
-                .distinct()
-                .toList();
-
+        List<String> permissions = permissionCacheService.getPermissions(roleIds) ;
 
         return AuthorityInfo.builder()
                 .roles(roles)

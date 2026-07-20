@@ -66,6 +66,7 @@ public class RefreshTokenService {
         return refreshToken;
     }
 
+    // will run the cleanup for revoke tokens
     public void revokeToken (RefreshToken refreshToken) {
         refreshToken.setRevoked(true);
         refreshTokenRepository.save(refreshToken);

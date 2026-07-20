@@ -67,7 +67,7 @@ public class AuthController {
                 log.info(
                         "Cookie -> Name: {}, Value: {}, Domain: {}, Path: {}, MaxAge: {}, Secure: {}, HttpOnly: {}",
                         c.getName(),
-                        c.getValue(),      // ⚠️ Avoid this in production
+                        c.getValue(),      // ⚠️ Avoid this in production -> just for log
                         c.getDomain(),
                         c.getPath(),
                         c.getMaxAge(),
@@ -79,16 +79,17 @@ public class AuthController {
             log.info("No cookies received in logout request.");
         }
 
-        Cookie cookie = CookieUtil.getCookie(
+        Cookie refreshTokenInCookie = CookieUtil.getCookie(
                 request,
                 CookieConstants.REFRESH_TOKEN
         ).orElseThrow(() ->
                 new InvalidRefreshTokenException(
                         "Refresh token cookie not found."
                 ));
-        log.info("Refresh Token: {}", cookie.getValue()); // ⚠️ Development only
 
-        authService.logout(cookie.getValue());
+        log.info("Refresh Token: {}", refreshTokenInCookie.getValue()); // ⚠️ Development only
+
+        authService.logout(refreshTokenInCookie.getValue());
 
         ResponseCookie deleteCookie = ResponseCookie.from(
                         CookieConstants.REFRESH_TOKEN,

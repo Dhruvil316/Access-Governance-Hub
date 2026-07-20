@@ -1,11 +1,13 @@
 package com.dhruvil.auth_service.security;
 
+import com.dhruvil.auth_service.dto.AuthorityInfo;
 import com.dhruvil.auth_service.entity.RolePermission;
 import com.dhruvil.auth_service.entity.User;
 import com.dhruvil.auth_service.entity.UserRole;
 import com.dhruvil.auth_service.repository.RolePermissionRepository;
 import com.dhruvil.auth_service.repository.UserRepository;
 import com.dhruvil.auth_service.repository.UserRoleRepository;
+import com.dhruvil.auth_service.services.AuthorityService;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.GrantedAuthority;
@@ -41,6 +43,7 @@ import java.util.Set;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final AuthorityService authorityService ;
     private final UserRoleRepository userRoleRepository;
     private final RolePermissionRepository rolePermissionRepository;
 
@@ -54,39 +57,22 @@ public class CustomUserDetailsService implements UserDetailsService {
                         new UsernameNotFoundException(
                                 "User not found with email : " + email));
 
-        // 2. Load User Roles
-        List<UserRole> userRoles = userRoleRepository.findAllRolesByUser(user);
+        AuthorityInfo authorityInfo =
+                authorityService.getAuthorities(user);
 
-        // 3. Collect Role IDs
-        List<Long> roleIds = userRoles.stream()
-                .map(userRole -> userRole.getRole().getId())
-                .toList();
-
-        // 4. Load Permissions for all Roles
-        List<RolePermission> rolePermissions = roleIds.isEmpty()
-                ? List.of()
-                : rolePermissionRepository.findAllByRoleIds(roleIds);
-
-        // 5. Build Authorities
         Set<GrantedAuthority> authorities = new HashSet<>();
 
-        // Add Roles
-        for (UserRole userRole : userRoles) {
-            authorities.add(
-                    new SimpleGrantedAuthority(
-                            "ROLE_" + userRole.getRole().getName()
-                    )
-            );
-        }
+        authorityInfo.getRoles().forEach(role ->
+                authorities.add(
+                        new SimpleGrantedAuthority("ROLE_" + role)
+                )
+        );
 
-        // Add Permissions
-        for (RolePermission rolePermission : rolePermissions) {
-            authorities.add(
-                    new SimpleGrantedAuthority(
-                            rolePermission.getPermission().getName()
-                    )
-            );
-        }
+        authorityInfo.getPermissions().forEach(permission ->
+                authorities.add(
+                        new SimpleGrantedAuthority(permission)
+                )
+        );
 
         // 6. Return UserPrincipal
         return new UserPrincipal(

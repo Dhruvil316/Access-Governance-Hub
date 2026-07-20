@@ -193,7 +193,6 @@ public class AuthService {
     }
 
     public void logout(String refreshToken) {
-
         RefreshToken storedToken =
                 refreshTokenService.verifyToken(refreshToken);
 
