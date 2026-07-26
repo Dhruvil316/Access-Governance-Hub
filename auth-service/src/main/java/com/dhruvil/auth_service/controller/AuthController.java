@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Duration;
 
 @RestController
-@RequestMapping("/auth")
+//@RequestMapping("/auth")
 @RequiredArgsConstructor
 @Slf4j
 public class AuthController {
@@ -42,11 +42,12 @@ public class AuthController {
                 .body(response);
     }
 
+
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(
             @Valid @RequestBody LoginRequest request
     ) {
-
+        log.info("-------------- HI ----------------");
         JwtResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }

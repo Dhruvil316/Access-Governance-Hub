@@ -12,7 +12,6 @@ spring:
       ddl-auto: update
     show-sql: true
 #    open-in-view: false
-    ddl-auto : update
     properties:
       hibernate:
         format_sql: true
@@ -27,6 +26,8 @@ spring:
 
 server:
   port: 8081
+  servlet:
+    context-path: /auth
 
 jwt:
   secret: "pHnv7b6IZH3mFtiHBhdLo3GYB9LgNDByMAs5lruRlPw=" # BAES64 -> why $ does not come ?

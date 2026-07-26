@@ -98,7 +98,6 @@ public class JwtService {
             String token,
             Function<Claims, T> resolver
     ) {
-
         return resolver.apply(extractAllClaims(token));
     }
 

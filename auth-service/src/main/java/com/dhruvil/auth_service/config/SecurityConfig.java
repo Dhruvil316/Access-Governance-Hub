@@ -39,10 +39,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         .requestMatchers(
-                                "/auth/signup",
-                                "/auth/login",
-                                "/auth/refresh",
-                                "/auth/logout" // just for testing
+                                "/signup",
+                                "/login",
+                                "/refresh",
+                                "/logout" // just for testing
 
                         ).permitAll()
 
