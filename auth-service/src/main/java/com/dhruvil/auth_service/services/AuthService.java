@@ -10,7 +10,6 @@ import com.dhruvil.auth_service.repository.RoleRepository;
 import com.dhruvil.auth_service.repository.UserRepository;
 import com.dhruvil.auth_service.repository.UserRoleRepository;
 import com.dhruvil.auth_service.security.JwtService;
-import com.dhruvil.auth_service.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

@@ -18,7 +18,6 @@ public class PermissionCacheService {
     )
     List <String> getPermissions (List <Long> roleIds )
     {
-        System.out.println("Fetching permissions from DATABASE...");
         return rolePermissionRepository.findAllByRoleIds(roleIds)
                 .stream()
                 .map(rolePermission -> rolePermission.getPermission().getName())

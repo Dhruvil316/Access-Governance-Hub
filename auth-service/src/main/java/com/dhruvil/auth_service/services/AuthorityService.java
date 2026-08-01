@@ -7,6 +7,7 @@ import com.dhruvil.auth_service.entity.UserRole;
 import com.dhruvil.auth_service.repository.RolePermissionRepository;
 import com.dhruvil.auth_service.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.util.*;
 

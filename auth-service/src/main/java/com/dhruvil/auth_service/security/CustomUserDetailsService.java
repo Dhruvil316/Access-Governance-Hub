@@ -5,6 +5,7 @@ import com.dhruvil.auth_service.entity.User;
 import com.dhruvil.auth_service.repository.UserRepository;
 import com.dhruvil.auth_service.services.AuthorityService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
