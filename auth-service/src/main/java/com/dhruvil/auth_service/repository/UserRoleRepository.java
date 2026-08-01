@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 public interface UserRoleRepository extends JpaRepository<UserRole, Long > {
 
@@ -15,7 +15,11 @@ public interface UserRoleRepository extends JpaRepository<UserRole, Long > {
 
     boolean existsByUserAndRole(User user, Role role);
 
+    Optional<UserRole> findByUserAndRole(User user, Role role);
+
     void deleteByUser(User user);
+
+    void deleteByRole(Role role);
 
     @Query("""
     SELECT ur

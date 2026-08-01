@@ -32,6 +32,13 @@ public class AuthorityService {
                 .map(userRole -> userRole.getRole().getId())
                 .toList();
 
+        if (roleIds.isEmpty()) {
+            return AuthorityInfo.builder()
+                    .roles(roles)
+                    .permissions(List.of())
+                    .build();
+        }
+
         List<String> permissions = permissionCacheService.getPermissions(roleIds) ;
 
         return AuthorityInfo.builder()

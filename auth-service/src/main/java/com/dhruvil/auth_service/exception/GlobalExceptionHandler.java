@@ -2,6 +2,7 @@ package com.dhruvil.auth_service.exception;
 
 import com.dhruvil.auth_service.dto.ApiErrorResponse;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -10,12 +11,20 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ApiErrorResponse> handleUserAlreadyExistsException(
             UserAlreadyExistsException ex) {
+
+        return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiErrorResponse> handleDuplicateResourceException(
+            DuplicateResourceException ex) {
 
         return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT);
     }
@@ -78,6 +87,7 @@ public class GlobalExceptionHandler {
             Exception ex) {
 
         ex.printStackTrace();
+        log.info("Idhar error aa ra hai");
 
         return buildErrorResponse(
                 "Something went wrong.",

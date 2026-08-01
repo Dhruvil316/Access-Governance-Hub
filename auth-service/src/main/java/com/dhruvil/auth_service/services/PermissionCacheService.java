@@ -2,6 +2,7 @@ package com.dhruvil.auth_service.services;
 
 import com.dhruvil.auth_service.repository.RolePermissionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -23,5 +24,10 @@ public class PermissionCacheService {
                 .map(rolePermission -> rolePermission.getPermission().getName())
                 .distinct()
                 .toList();
+    }
+
+    @CacheEvict(value = "role-permissions", allEntries = true)
+    public void evictRolePermissionCache() {
+        // Cache invalidation hook for role-permission assignment changes.
     }
 }

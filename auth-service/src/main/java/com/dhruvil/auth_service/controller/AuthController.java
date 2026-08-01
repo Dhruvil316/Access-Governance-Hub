@@ -22,11 +22,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
+import java.util.Arrays;
 
 @RestController
-//@RequestMapping("/auth")
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
     private final JwtProperties jwtProperties ;
@@ -45,11 +45,28 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(
-            @Valid @RequestBody LoginRequest request
+            @Valid @RequestBody LoginRequest request,
+            HttpServletResponse response
     ) {
-        log.info("-------------- HI ----------------");
-        JwtResponse response = authService.login(request);
-        return ResponseEntity.ok(response);
+        JwtResponse jwtResponse = authService.login(request);
+
+        ResponseCookie refreshCookie = ResponseCookie.from(
+                        CookieConstants.REFRESH_TOKEN,
+                        jwtResponse.getRefreshToken()
+                )
+                .httpOnly(true)
+                .secure(false)          // true in production (HTTPS)
+                .sameSite("Strict")
+                .path("/auth")
+                .maxAge(Duration.ofDays(7))
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        // Don't expose refresh token in the response body
+        jwtResponse.setRefreshToken(null);
+
+        return ResponseEntity.ok(jwtResponse);
     }
 
 
@@ -60,25 +77,7 @@ public class AuthController {
             HttpServletResponse response
     ) {
 
-        // Log all cookies received
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            log.info("Received {} cookies", cookies.length);
-            for (Cookie c : cookies) {
-                log.info(
-                        "Cookie -> Name: {}, Value: {}, Domain: {}, Path: {}, MaxAge: {}, Secure: {}, HttpOnly: {}",
-                        c.getName(),
-                        c.getValue(),      // ⚠️ Avoid this in production -> just for log
-                        c.getDomain(),
-                        c.getPath(),
-                        c.getMaxAge(),
-                        c.getSecure(),
-                        c.isHttpOnly()
-                );
-            }
-        } else {
-            log.info("No cookies received in logout request.");
-        }
+        log.info("Reached my logout endpoint");
 
         Cookie refreshTokenInCookie = CookieUtil.getCookie(
                 request,
@@ -88,7 +87,6 @@ public class AuthController {
                         "Refresh token cookie not found."
                 ));
 
-        log.info("Refresh Token: {}", refreshTokenInCookie.getValue()); // ⚠️ Development only
 
         authService.logout(refreshTokenInCookie.getValue());
 
@@ -97,7 +95,7 @@ public class AuthController {
                         ""
                 )
                 .httpOnly(true)
-                .secure(true)
+                .secure(false) // for localhost
                 .sameSite("Strict")
                 .path("/auth")
                 .maxAge(0)

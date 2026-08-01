@@ -1,12 +1,8 @@
 package com.dhruvil.auth_service.security;
 
 import com.dhruvil.auth_service.dto.AuthorityInfo;
-import com.dhruvil.auth_service.entity.RolePermission;
 import com.dhruvil.auth_service.entity.User;
-import com.dhruvil.auth_service.entity.UserRole;
-import com.dhruvil.auth_service.repository.RolePermissionRepository;
 import com.dhruvil.auth_service.repository.UserRepository;
-import com.dhruvil.auth_service.repository.UserRoleRepository;
 import com.dhruvil.auth_service.services.AuthorityService;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -44,8 +40,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final AuthorityService authorityService ;
-    private final UserRoleRepository userRoleRepository;
-    private final RolePermissionRepository rolePermissionRepository;
 
     @Override
     public @NonNull UserDetails loadUserByUsername(@NonNull String email)
@@ -61,12 +55,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                 authorityService.getAuthorities(user);
 
         Set<GrantedAuthority> authorities = new HashSet<>();
-
-        authorityInfo.getRoles().forEach(role ->
-                authorities.add(
-                        new SimpleGrantedAuthority("ROLE_" + role)
-                )
-        );
 
         authorityInfo.getPermissions().forEach(permission ->
                 authorities.add(

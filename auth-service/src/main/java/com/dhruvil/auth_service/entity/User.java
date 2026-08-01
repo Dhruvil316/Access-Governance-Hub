@@ -3,12 +3,14 @@ package com.dhruvil.auth_service.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        indexes = {
+                @Index(name = "idx_users_email", columnList = "email"),
+                @Index(name = "idx_users_employee_id", columnList = "employee_id")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,18 +21,28 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable=false)
+    @Column(name = "employee_id", nullable = false, unique = true)
+    private String employeeId;
+
+    @Column(nullable = false)
     private String firstName;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String lastName;
 
-    @Column(nullable=false,unique=true)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String password;
 
-    @Column(nullable=false)
-    private Boolean enabled=true;
+    @Column(nullable = false)
+    private String department;
+
+    @Column(nullable = false)
+    private String designation;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean enabled = true;
 }

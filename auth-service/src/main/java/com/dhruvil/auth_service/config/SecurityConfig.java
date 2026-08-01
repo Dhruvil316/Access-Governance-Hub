@@ -30,7 +30,11 @@ public class SecurityConfig {
 
                 // Disable CSRF because we are using JWT
                 .csrf(AbstractHttpConfigurer::disable)
-
+                .logout(AbstractHttpConfigurer::disable) /*
+                    Spring Security's LogoutFilter is in the chain and is likely handling
+                    /logout before controller.
+                    so disable it
+                 */
                 // No HTTP Session
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

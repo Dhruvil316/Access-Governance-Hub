@@ -100,18 +100,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         Collection<SimpleGrantedAuthority> authorities = new HashSet<>();
 
-        List<String> roles =
-                (List<String>) claims.get("roles");
-
         List<String> permissions =
                 (List<String>) claims.get("permissions");
-
-        if (roles != null) {
-            roles.forEach(role ->
-                    authorities.add(
-                            new SimpleGrantedAuthority("ROLE_" + role)
-                    ));
-        }
 
         if (permissions != null) {
             permissions.forEach(permission ->

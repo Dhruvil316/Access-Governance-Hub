@@ -16,6 +16,8 @@ public class SignupRequest {
     @NotBlank
     private String lastName;
 
+    private String employeeId;
+
     @Email
     @NotBlank
     private String email;
@@ -23,6 +25,10 @@ public class SignupRequest {
     @NotBlank
     @Size(min = 8)
     private String password;
+
+    private String department;
+
+    private String designation;
 
     private List<@NotBlank String> roles;
 }

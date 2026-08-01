@@ -15,13 +15,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,57 +38,47 @@ public class AuthService {
     public MessageResponse signup(SignupRequest request) {
 
         // 1. Check if user already exists
-        if (userRepository.existsByEmail(request.getEmail())) {
+        String email = request.getEmail().trim().toLowerCase();
+        String employeeId = Optional.ofNullable(request.getEmployeeId())
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .orElseGet(() -> "SELF-" + UUID.randomUUID());
+
+        if (userRepository.existsByEmail(email)) {
             throw new UserAlreadyExistsException(
-                    "User already exists with email: " + request.getEmail()
+                    "User already exists with email: " + email
+            );
+        }
+
+        if (userRepository.existsByEmployeeId(employeeId)) {
+            throw new UserAlreadyExistsException(
+                    "User already exists with employeeId: " + employeeId
             );
         }
 
         // 2. Create User
         User user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
+                .employeeId(employeeId)
+                .firstName(request.getFirstName().trim())
+                .lastName(request.getLastName().trim())
+                .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
+                .department(defaultIfBlank(request.getDepartment(), "Unassigned"))
+                .designation(defaultIfBlank(request.getDesignation(), "Employee"))
                 .enabled(true)
                 .build();
 
         user = userRepository.save(user);
 
-        // 3. Prepare Roles
-        Set<String> requestedRoles = Optional.ofNullable(request.getRoles())
-                .orElse(List.of("USER"))
-                .stream()
-                .map(String::trim)
-                .map(String::toUpperCase)
-                .filter(role -> !role.isBlank())
-                .collect(Collectors.toSet());
+        Role employeeRole = roleRepository.findByName("EMPLOYEE")
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: EMPLOYEE"));
 
-        if (requestedRoles.isEmpty()) {
-            requestedRoles = Set.of("USER");
-        }
-
-        // 4. Create UserRole mappings
-        List<UserRole> mappings = new ArrayList<>();
-
-        for (String roleName : requestedRoles) {
-
-            Role role = roleRepository.findByName(roleName)
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException(
-                                    "Role not found: " + roleName
-                            ));
-
-            mappings.add(
-                    UserRole.builder()
-                            .user(user)
-                            .role(role)
-                            .build()
-            );
-        }
-
-        // 5. Save Role Mappings
-        userRoleRepository.saveAll(mappings);
+        userRoleRepository.save(
+                UserRole.builder()
+                        .user(user)
+                        .role(employeeRole)
+                        .build()
+        );
 
         // 6. Return Success Response
         return MessageResponse.builder()
@@ -99,30 +87,14 @@ public class AuthService {
     }
 
     public JwtResponse login (LoginRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
 
-        Authentication authentication = authenticationManager.authenticate(
+         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
+                        email,
                         request.getPassword()
                 )
         );
-
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal() ;
-
-        Collection<? extends GrantedAuthority> authorities =
-                userPrincipal.getAuthorities();
-
-        List<String> roles = authorities.stream()
-                .map(GrantedAuthority::getAuthority).filter(Objects::nonNull)
-                .filter(authority -> authority.startsWith("ROLE_"))
-                .map(role -> role.substring(5))
-                .toList();
-
-        List<String> permissions = authorities.stream()
-                .map(GrantedAuthority::getAuthority).filter(Objects::nonNull)
-                .filter(authority -> !authority.startsWith("ROLE_"))
-                .toList();
-
 
         /*
          * AuthenticationManager authenticates the user by calling
@@ -135,20 +107,22 @@ public class AuthService {
          * security layer (UserPrincipal) separate from the persistence layer.
          *
          * If needed later, this can be optimized using
-         * userRepository.getReferenceById(userPrincipal.getId()).
+         * userRepository.getReferenceById(authenticatedUserId).
          */
 
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "User not found with email: " + request.getEmail()
+                                "User not found with email: " + email
                         ));
 
+        AuthorityInfo authorityInfo =
+                authorityService.getAuthorities(user);
 
         String accessToken = jwtService.generateAccessToken(
                 user,
-                roles ,
-                permissions
+                authorityInfo.getRoles(),
+                authorityInfo.getPermissions()
         );
 
         RefreshToken refreshToken =
@@ -197,5 +171,12 @@ public class AuthService {
                 refreshTokenService.verifyToken(refreshToken);
 
         refreshTokenService.revokeToken(storedToken);
+    }
+
+    private String defaultIfBlank(String value, String fallback) {
+        return Optional.ofNullable(value)
+                .map(String::trim)
+                .filter(candidate -> !candidate.isBlank())
+                .orElse(fallback);
     }
 }
