@@ -46,7 +46,8 @@ public class SecurityConfig {
                                 "/signup",
                                 "/login",
                                 "/refresh",
-                                "/logout" // just for testing
+                                "/logout" ,// just for testing,
+                                "/kafka/**"
 
                         ).permitAll()
 

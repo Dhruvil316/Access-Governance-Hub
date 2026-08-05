@@ -11,6 +11,10 @@ spring:
       repositories:
         enabled: false
 
+## Kafka config
+#  kafka :
+#    bootstrap-servers: localhost:9092
+
 app:
   seed:
     enabled: false

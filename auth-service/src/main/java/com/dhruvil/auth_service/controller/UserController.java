@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,6 +32,18 @@ import java.util.List;
 public class UserController {
 
     private final UserManagementService userManagementService;
+
+    //  Setting up kafka template
+    private final KafkaTemplate<String,String>  kafkaTemplate ;
+
+    //  Testing the Kafka
+    @PostMapping("/kafka/{message}")
+    public ResponseEntity<String> sendMessage (@PathVariable String message )
+    {
+        // kafka topic cannot have space in the topic name
+        kafkaTemplate.send("user-random-topic", message);
+        return ResponseEntity.ok("Message queued") ;
+    }
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> me(
