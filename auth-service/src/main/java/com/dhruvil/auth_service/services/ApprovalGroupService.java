@@ -11,7 +11,11 @@ import com.dhruvil.auth_service.exception.ResourceNotFoundException;
 import com.dhruvil.auth_service.repository.ApprovalGroupMemberRepository;
 import com.dhruvil.auth_service.repository.ApprovalGroupRepository;
 import com.dhruvil.auth_service.repository.UserRepository;
+import com.dhruvil.event.ApprovalGroupAction;
+import com.dhruvil.event.ApprovalGroupEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +27,13 @@ import java.util.Optional;
 @Transactional
 public class ApprovalGroupService {
 
+    @Value("${kafka.topic.approval-group-topic}")
+    private String KAFKA_APPROVAL_GROUP_TOPIC ;
+
     private final ApprovalGroupRepository approvalGroupRepository;
     private final ApprovalGroupMemberRepository approvalGroupMemberRepository;
     private final UserRepository userRepository;
+    private final KafkaTemplate<Long, ApprovalGroupEvent> kafkaTemplate ;
 
     @Transactional(readOnly = true)
     public List<ApprovalGroupResponse> findAll() {
@@ -99,6 +107,16 @@ public class ApprovalGroupService {
                     ApprovalGroupMember.builder()
                             .approvalGroup(approvalGroup)
                             .user(user)
+                            .build()
+            );
+
+            kafkaTemplate.send(
+                    KAFKA_APPROVAL_GROUP_TOPIC,
+                    groupId,
+                    ApprovalGroupEvent.newBuilder()
+                            .setApprovalGroupId(groupId)
+                            .setUserId(userId)
+                            .setAction(ApprovalGroupAction.MEMBER_ADDED)
                             .build()
             );
         }

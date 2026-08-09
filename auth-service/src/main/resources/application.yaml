@@ -5,16 +5,32 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
 
-# control the database seeder
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      acks: all
+      retries: 3
+      properties :
+        schema :
+          registry :
+            url : http://127.0.0.1:9093
+
+
   data:
     redis:
       repositories:
         enabled: false
 
-## Kafka config
-#  kafka :
-#    bootstrap-servers: localhost:9092
 
+# Kafka topics
+kafka:
+  topic:
+    user-random-topic: user-random-topic
+    approval-group-topic: approval-group-topic
+
+
+# Database seeder
 app:
   seed:
     enabled: false

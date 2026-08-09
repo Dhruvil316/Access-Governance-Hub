@@ -3,11 +3,13 @@ package com.dhruvil.auth_service.controller;
 import com.dhruvil.auth_service.dto.ApiResponse;
 import com.dhruvil.auth_service.dto.ApprovalGroupRequest;
 import com.dhruvil.auth_service.dto.ApprovalGroupResponse;
+import com.dhruvil.auth_service.event.ApprovalGroupUpdateEvent;
 import com.dhruvil.auth_service.services.ApprovalGroupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -71,6 +73,10 @@ public class ApprovalGroupController {
         approvalGroupService.delete(id);
         return ResponseEntity.ok(new ApiResponse<>("Approval group deleted successfully.", null));
     }
+
+    /*
+         while adding the members, sent this event to kafka
+    */
 
     @PostMapping("/{groupId}/members/{userId}")
     @PreAuthorize("hasAuthority('GROUP_WRITE')")

@@ -7,8 +7,18 @@ spring:
     consumer:
       group-id: notification-group
       auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+
+      properties:
+        spring.json:
+          trusted.packages: "com.dhruvil.auth_service.*"
+        schema:
+          registry:
+            url: http://127.0.0.1:9093
+        specific:
+          avro:
+            reader: true
 
   config:
     import: optional:configserver:http://localhost:8888

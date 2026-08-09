@@ -1,0 +1,25 @@
+{
+  "name" : "ApprovalGroupEvent" ,
+  "namespace": "com.dhruvil.event" ,
+  "type": "record",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "long"
+    },
+    {
+      "name": "approvalGroupId",
+      "type": "long"
+    },
+    {
+      "name": "action",
+      "type": {
+        "type": "enum",
+        "name": "ApprovalGroupAction",
+        "symbols": [
+          "MEMBER_ADDED",
+          "MEMBER_REMOVED"
+          ]
+      }
+    }]
+}
